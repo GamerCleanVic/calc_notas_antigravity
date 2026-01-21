@@ -2,7 +2,7 @@
 set -e
 
 # Define JavaFX SDK path
-JAVAFX_LIB="lib/javafx-sdk-21.0.1/lib"
+JAVAFX_LIB="lib/openjfx/lib"
 
 # Clean output directory
 rm -rf out
