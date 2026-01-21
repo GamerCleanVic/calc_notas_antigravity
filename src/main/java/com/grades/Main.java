@@ -6,17 +6,23 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.DialogPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main extends Application {
 
     private TextField n1Field, n2Field, n3Field, n4Field, finalField;
     private Button calcButton, verifyFinalButton;
+    private double dife;
 
     @Override
     public void start(Stage primaryStage) {
@@ -75,10 +81,6 @@ public class Main extends Application {
         if (css != null) {
             scene.getStylesheets().add(css);
         } else {
-            // Fallback if css file resource finding fails (though we will create it)
-            // In a real jar run, resources need to be handled carefully, but for local run
-            // it should work if in classpath.
-            // We will handle classpath in run script.
             System.out.println("CSS not found, running without styles.");
         }
 
@@ -94,8 +96,6 @@ public class Main extends Application {
         return tf;
     }
 
-    private double dife;
-
     private void calculateAverage() {
         try {
             double n1 = Double.parseDouble(n1Field.getText());
@@ -105,24 +105,22 @@ public class Main extends Application {
 
             double average = (n1 + n2 + n3 + n4) / 4.0;
 
+            StringBuffer sb = new StringBuffer();
             if (average >= 7.0) {
-                StringBuffer sb = new StringBuffer();
                 sb.append("Sua média é ").append(String.format("%.2f", average))
                         .append(". Nota >= 7 - Aprovado");
                 showAlert(Alert.AlertType.INFORMATION, "Aprovado", sb.toString());
 
-                // Reset/Disable final if previously enabled
-                finalField.setDisable(true);
-                finalField.clear();
-                verifyFinalButton.setDisable(true);
+                resetFinal();
             } else if (average < 5.0) {
-                showAlert(Alert.AlertType.ERROR, "Reprovado", "Média < 5. Aluno reprovado!");
-                finalField.setDisable(true);
-                finalField.clear();
-                verifyFinalButton.setDisable(true);
+                // Modified Logic: Show Average and Reproval message
+                sb.append("Sua média é ").append(String.format("%.2f", average))
+                        .append(".\nAluno reprovado.");
+                showAlert(Alert.AlertType.ERROR, "Reprovado", sb.toString());
+
+                resetFinal();
             } else {
                 dife = 10.0 - average;
-                StringBuffer sb = new StringBuffer();
                 sb.append("Sua média é ").append(String.format("%.2f", average))
                         .append(".\nFará a final por ").append(String.format("%.2f", dife));
                 showAlert(Alert.AlertType.WARNING, "Recuperação", sb.toString());
@@ -137,14 +135,21 @@ public class Main extends Application {
         }
     }
 
+    private void resetFinal() {
+        finalField.setDisable(true);
+        finalField.clear();
+        verifyFinalButton.setDisable(true);
+    }
+
     private void checkFinal() {
         try {
             double finalGrade = Double.parseDouble(finalField.getText());
+            StringBuffer sb = new StringBuffer();
 
             if (finalGrade >= dife) {
-                showAlert(Alert.AlertType.INFORMATION, "Aprovado", "Aluno aprovado");
+                sb.append("Aluno aprovado");
+                showAlert(Alert.AlertType.INFORMATION, "Aprovado", sb.toString());
             } else {
-                StringBuffer sb = new StringBuffer();
                 sb.append("Nota Final < ").append(String.format("%.2f", dife))
                         .append(". Aluno reprovado.");
                 showAlert(Alert.AlertType.ERROR, "Reprovado", sb.toString());
@@ -158,7 +163,10 @@ public class Main extends Application {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
-        alert.setContentText(content);
+
+        // Use TextFlow for rich text styling
+        TextFlow textFlow = createStyledTextFlow(content);
+        alert.getDialogPane().setContent(textFlow);
 
         // Apply styles to dialog
         DialogPane dialogPane = alert.getDialogPane();
@@ -171,6 +179,40 @@ public class Main extends Application {
         }
 
         alert.showAndWait();
+    }
+
+    private TextFlow createStyledTextFlow(String content) {
+        TextFlow flow = new TextFlow();
+        // Regex to match numbers (including decimals with . or ,) or specific keywords
+        // Keywords: aprovado, reprovado (case insensitive)
+        // Numbers: \d+([.,]\d+)?
+        String regex = "(?i)(\\baprovado\\b|\\breprovado\\b|\\d+([.,]\\d+)?)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(content);
+
+        int lastEnd = 0;
+        while (matcher.find()) {
+            // Append text before the match
+            if (matcher.start() > lastEnd) {
+                Text plainText = new Text(content.substring(lastEnd, matcher.start()));
+                flow.getChildren().add(plainText);
+            }
+
+            // Append the match with highlight style
+            Text highlightedText = new Text(matcher.group());
+            highlightedText.getStyleClass().add("highlight-text");
+            flow.getChildren().add(highlightedText);
+
+            lastEnd = matcher.end();
+        }
+
+        // Append remaining text
+        if (lastEnd < content.length()) {
+            Text plainText = new Text(content.substring(lastEnd));
+            flow.getChildren().add(plainText);
+        }
+
+        return flow;
     }
 
     public static void main(String[] args) {
