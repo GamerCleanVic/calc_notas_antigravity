@@ -106,8 +106,11 @@ public class Main extends Application {
             double average = (n1 + n2 + n3 + n4) / 4.0;
 
             if (average >= 7.0) {
-                showAlert(Alert.AlertType.INFORMATION, "Aprovado",
-                        String.format("Sua média é %.2f. Nota >= 7 - Aprovado", average));
+                StringBuffer sb = new StringBuffer();
+                sb.append("Sua média é ").append(String.format("%.2f", average))
+                        .append(". Nota >= 7 - Aprovado");
+                showAlert(Alert.AlertType.INFORMATION, "Aprovado", sb.toString());
+
                 // Reset/Disable final if previously enabled
                 finalField.setDisable(true);
                 finalField.clear();
@@ -119,8 +122,11 @@ public class Main extends Application {
                 verifyFinalButton.setDisable(true);
             } else {
                 dife = 10.0 - average;
-                showAlert(Alert.AlertType.WARNING, "Recuperação",
-                        String.format("Sua média é %.2f.\nFará a final por %.2f", average, dife));
+                StringBuffer sb = new StringBuffer();
+                sb.append("Sua média é ").append(String.format("%.2f", average))
+                        .append(".\nFará a final por ").append(String.format("%.2f", dife));
+                showAlert(Alert.AlertType.WARNING, "Recuperação", sb.toString());
+
                 finalField.setDisable(false);
                 verifyFinalButton.setDisable(false);
                 finalField.requestFocus();
@@ -138,8 +144,10 @@ public class Main extends Application {
             if (finalGrade >= dife) {
                 showAlert(Alert.AlertType.INFORMATION, "Aprovado", "Aluno aprovado");
             } else {
-                showAlert(Alert.AlertType.ERROR, "Reprovado",
-                        "Nota Final < " + String.format("%.2f", dife) + ". Aluno reprovado.");
+                StringBuffer sb = new StringBuffer();
+                sb.append("Nota Final < ").append(String.format("%.2f", dife))
+                        .append(". Aluno reprovado.");
+                showAlert(Alert.AlertType.ERROR, "Reprovado", sb.toString());
             }
         } catch (NumberFormatException e) {
             showAlert(Alert.AlertType.ERROR, "Erro", "Por favor, insira uma nota final válida.");
