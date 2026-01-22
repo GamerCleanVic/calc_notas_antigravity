@@ -5,7 +5,7 @@
 ![Print do App](https://raw.githubusercontent.com/GamerCleanVic/archives/refs/heads/main/images/calcNPrint1.png)
 
 ## Demonstração
-<video src="https://i.imgur.com/fz9k8Ys.mp4" type="video/mp4" controls width="100%" fullscreen="true"></video>
+<video src="https://i.imgur.com/fz9k8Ys.mp4" type="video/mp4" controls width="100%"></video>
 
 
 ## Requerimentos 
